@@ -16,11 +16,14 @@
     "@as-integrations/express5": "^1.1.2",
     "@graphql-tools/schema": "^10.0.25",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "graphql": "^16.11.0",
     "graphql-ws": "^6.0.6",
     "http": "^0.0.1-security",
-    "ws": "^8.18.3"
+    "mongoose": "^8.19.1",
+    "ws": "^8.18.3",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

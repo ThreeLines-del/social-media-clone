@@ -5,12 +5,30 @@ import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHt
 import express from "express";
 import http from "http";
 import cors from "cors";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
 
 import { useServer } from "graphql-ws/use/ws";
 import { WebSocketServer } from "ws";
 
+dotenv.config();
+
 import typeDefs from "./graphql/typeDefs.js";
 import resolvers from "./graphql/resolvers.js";
+
+mongoose.connect(process.env.MONGODB_URI).then(() => {
+  console.log("connected to mongoDB");
+});
+
+mongoose.connection.on("connected", () => {
+  console.log("✅ Mongoose connected to:", mongoose.connection.name);
+});
+
+mongoose.connection.on("error", (err) => {
+  console.error("❌ Mongoose connection error:", err);
+});
+
+mongoose.set("debug", true);
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -51,7 +69,7 @@ const server = new ApolloServer({
 
   app.use("/graphql", cors(), express.json(), expressMiddleware(server));
 
-  const PORT = process.env.PORT || 4000;
+  const PORT = process.env.PORT;
   httpServer.listen(PORT, () => {
     console.log(`🚀 Query endpoint ready at http://localhost:${PORT}/graphql`);
     console.log(
