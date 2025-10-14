@@ -1,0 +1,13 @@
+import { z } from "zod";
+
+export const UserLoginSchema = z.object({
+  email: z.email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+export const UserRegisterSchema = UserLoginSchema.extend({
+  username: z.string().min(1, "Username is required"),
+  name: z.string().optional(),
+  bio: z.string().optional(),
+  avatar: z.url("Invalid avatar URL").optional(),
+});

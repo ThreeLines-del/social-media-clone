@@ -1,5 +1,5 @@
 import mongoose, { Model } from "mongoose";
-import { ILike } from "../../types-schemas/types.js";
+import { ILike } from "../types-schemas/types.js";
 
 const likeSchema = new mongoose.Schema(
   {

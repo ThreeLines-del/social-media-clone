@@ -7,6 +7,7 @@ import http from "http";
 import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
 
 import { useServer } from "graphql-ws/use/ws";
 import { WebSocketServer } from "ws";
@@ -15,20 +16,15 @@ dotenv.config();
 
 import typeDefs from "./graphql/typeDefs.js";
 import resolvers from "./graphql/resolvers.js";
+import UserModel from "./models/user.js";
+import PostModel from "./models/post.js";
+import CommentModel from "./models/comment.js";
+import LikeModel from "./models/like.js";
+import FollowModel from "./models/follow.js";
 
 mongoose.connect(process.env.MONGODB_URI).then(() => {
   console.log("connected to mongoDB");
 });
-
-mongoose.connection.on("connected", () => {
-  console.log("✅ Mongoose connected to:", mongoose.connection.name);
-});
-
-mongoose.connection.on("error", (err) => {
-  console.error("❌ Mongoose connection error:", err);
-});
-
-mongoose.set("debug", true);
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -67,7 +63,43 @@ const server = new ApolloServer({
 (async () => {
   await server.start();
 
-  app.use("/graphql", cors(), express.json(), expressMiddleware(server));
+  app.use(
+    "/graphql",
+    cors(),
+    express.json(),
+    expressMiddleware(server, {
+      context: async ({ req, res }) => {
+        let currentUser = null;
+        const auth = req.headers.authorization || "";
+
+        if (auth.startsWith("Bearer ")) {
+          try {
+            const decodedToken = jwt.verify(
+              auth.substring(7),
+              process.env.JWT_SECRET
+            ) as jwt.JwtPayload & { id?: string };
+
+            if (decodedToken?.id) {
+              currentUser = await UserModel.findById(decodedToken.id);
+            }
+          } catch (err: any) {
+            console.warn("Invalid token:", err.message);
+          }
+        }
+
+        return {
+          currentUser,
+          models: {
+            User: UserModel,
+            Post: PostModel,
+            Comment: CommentModel,
+            Like: LikeModel,
+            Follow: FollowModel,
+          },
+        };
+      },
+    })
+  );
 
   const PORT = process.env.PORT;
   httpServer.listen(PORT, () => {

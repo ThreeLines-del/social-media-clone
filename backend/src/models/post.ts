@@ -1,5 +1,5 @@
 import mongoose, { Model } from "mongoose";
-import { IPost } from "../../types-schemas/types.js";
+import { IPost } from "../types-schemas/types.js";
 
 const postSchema = new mongoose.Schema(
   {

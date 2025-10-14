@@ -1,5 +1,5 @@
 import mongoose, { Model } from "mongoose";
-import { IFollow } from "../../types-schemas/types.js";
+import { IFollow } from "../types-schemas/types.js";
 
 const followSchema = new mongoose.Schema(
   {
