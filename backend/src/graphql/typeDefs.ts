@@ -120,15 +120,15 @@ const typeDefs = `#graphql
         # Users
         me: User
         user(username: String!): User
-        users(first: Int, after: ID): UserConnection!
+        users(first: Int!, after: ID): UserConnection!
 
         # Posts
         post(id: ID!): Post
-        posts(first: Int, after: ID): PostConnection!
-        feed(first: Int, after: ID): PostConnection! # Posts from followed users
+        posts(first: Int!, after: ID): PostConnection!
+        feed(first: Int!, after: ID): PostConnection! # Posts from followed users
 
         # Comments
-        comments(postId: ID!, first: Int, after: ID): CommentConnection!
+        comments(postId: ID!, first: Int!, after: ID): CommentConnection!
     }
 
     # =========================

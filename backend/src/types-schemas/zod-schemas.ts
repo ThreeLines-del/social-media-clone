@@ -11,3 +11,8 @@ export const UserRegisterSchema = UserLoginSchema.extend({
   bio: z.string().optional(),
   avatar: z.url("Invalid avatar URL").optional(),
 });
+
+export const PostSchema = z.object({
+  content: z.string().min(1, "Content is required"),
+  image: z.url("Invalid image URL").optional(),
+});
