@@ -17,6 +17,7 @@
     "@graphql-tools/schema": "^10.0.25",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
+    "dataloader": "^2.2.3",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "graphql": "^16.11.0",

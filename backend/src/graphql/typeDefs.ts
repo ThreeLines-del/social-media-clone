@@ -76,6 +76,7 @@ const typeDefs = `#graphql
     type UserConnection {
         edges: [UserEdge!]!
         pageInfo: PageInfo!
+        totalCount: Int!
     }
 
     type PostEdge {
@@ -85,6 +86,7 @@ const typeDefs = `#graphql
     type PostConnection {
         edges: [PostEdge!]!
         pageInfo: PageInfo!
+        totalCount: Int!
     }
 
     type CommentEdge {
@@ -94,6 +96,7 @@ const typeDefs = `#graphql
     type CommentConnection {
         edges: [CommentEdge!]!
         pageInfo: PageInfo!
+        totalCount: Int!
     }
 
     type LikeEdge {
@@ -103,6 +106,7 @@ const typeDefs = `#graphql
     type LikeConnection {
         edges: [LikeEdge!]!
         pageInfo: PageInfo!
+        totalCount: Int!
     }
 
     # =========================
@@ -111,6 +115,30 @@ const typeDefs = `#graphql
     type AuthPayload {
         token: String!
         user: User!
+    }
+
+    # =========================
+    #  Activity Payloads
+    # =========================
+    type ActivityPayload {
+        success: Boolean!
+        message: String
+    }
+    
+    type LikePostPayload {
+        liked: Boolean!
+    }
+
+    type FollowUserResponse {
+        success: Boolean!
+        following: Boolean!
+        message: String!
+    }
+
+    type UpdateProfileResponse {
+        success: Boolean!
+        message: String
+        user: User
     }
 
     # =========================
@@ -141,26 +169,24 @@ const typeDefs = `#graphql
 
         # Posts
         createPost(content: String!, image: String): Post!
-        deletePost(id: ID!): Boolean!
+        deletePost(id: ID!): ActivityPayload!
 
         # Comments
         addComment(postId: ID!, content: String!): Comment!
-        deleteComment(id: ID!): Boolean!
+        deleteComment(id: ID!): ActivityPayload!
 
         # Likes
-        likePost(postId: ID!): Like!
-        unlikePost(postId: ID!): Boolean!
+        likePost(postId: ID!): LikePostPayload!
 
         # Follow system
-        followUser(userId: ID!): Boolean!
-        unfollowUser(userId: ID!): Boolean!
+        followUser(userId: ID!): FollowUserResponse!
 
         # Profile
-        updateProfile(name: String, bio: String, avatar: String): User!
+        updateProfile(name: String, bio: String, avatar: String): UpdateProfileResponse!
     }
 
     # =========================
-    #  Subscriptions (Optional)
+    #  Subscriptions
     # =========================
     type Subscription {
         newPost: Post!

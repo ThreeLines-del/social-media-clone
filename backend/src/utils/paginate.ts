@@ -25,6 +25,8 @@ export async function paginate<T extends Document>(
   }));
 
   const endCursor = edges.length > 0 ? edges[edges.length - 1].cursor : null;
+  const { _id, ...rest } = query;
+  const totalCount = await model.countDocuments(rest);
 
   return {
     edges,
@@ -32,5 +34,6 @@ export async function paginate<T extends Document>(
       hasNextPage,
       endCursor,
     },
+    totalCount,
   };
 }

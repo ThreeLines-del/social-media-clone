@@ -16,3 +16,14 @@ export const PostSchema = z.object({
   content: z.string().min(1, "Content is required"),
   image: z.url("Invalid image URL").optional(),
 });
+
+export const CommentSchema = z.object({
+  content: z.string().min(1, "Content is required"),
+  postId: z.string(),
+});
+
+export const UpdateProfileSchema = UserRegisterSchema.omit({
+  username: true,
+  email: true,
+  password: true,
+});

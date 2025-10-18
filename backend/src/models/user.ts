@@ -10,7 +10,6 @@ const userSchema = new mongoose.Schema(
     bio: { type: String, default: "" },
     avatar: { type: String, default: "" },
 
-    // Optional precomputed counts
     followersCount: { type: Number, default: 0 },
     followingCount: { type: Number, default: 0 },
   },

@@ -26,6 +26,8 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
   console.log("connected to mongoDB");
 });
 
+mongoose.set("debug", true);
+
 const app = express();
 const httpServer = http.createServer(app);
 
@@ -80,7 +82,7 @@ const server = new ApolloServer({
             ) as jwt.JwtPayload & { id?: string };
 
             if (decodedToken?.id) {
-              currentUser = await UserModel.findById(decodedToken.id);
+              currentUser = await UserModel.findById(decodedToken.id).lean();
             }
           } catch (err: any) {
             console.warn("Invalid token:", err.message);
