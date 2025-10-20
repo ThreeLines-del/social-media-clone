@@ -1,4 +1,6 @@
+import DataLoader from "dataloader";
 import { Document, Model, Types } from "mongoose";
+import createLoaders from "../context.js";
 
 export interface IUser extends Document {
   username: string;
@@ -59,4 +61,5 @@ export interface GraphQLContext {
     Like: Model<ILike>;
     Follow?: Model<IFollow>;
   };
+  loaders: ReturnType<typeof createLoaders>;
 }

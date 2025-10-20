@@ -21,6 +21,7 @@ import PostModel from "./models/post.js";
 import CommentModel from "./models/comment.js";
 import LikeModel from "./models/like.js";
 import FollowModel from "./models/follow.js";
+import createLoaders from "./context.js";
 
 mongoose.connect(process.env.MONGODB_URI).then(() => {
   console.log("connected to mongoDB");
@@ -82,7 +83,7 @@ const server = new ApolloServer({
             ) as jwt.JwtPayload & { id?: string };
 
             if (decodedToken?.id) {
-              currentUser = await UserModel.findById(decodedToken.id).lean();
+              currentUser = await UserModel.findById(decodedToken.id);
             }
           } catch (err: any) {
             console.warn("Invalid token:", err.message);
@@ -98,6 +99,7 @@ const server = new ApolloServer({
             Like: LikeModel,
             Follow: FollowModel,
           },
+          loaders: createLoaders(),
         };
       },
     })

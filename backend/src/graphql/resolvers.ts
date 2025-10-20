@@ -1,5 +1,10 @@
 import { GraphQLError } from "graphql";
-import { GraphQLContext, IPost, IUser } from "../types-schemas/types.js";
+import {
+  GraphQLContext,
+  IFollow,
+  IPost,
+  IUser,
+} from "../types-schemas/types.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import {
@@ -12,6 +17,7 @@ import {
 import { Types } from "mongoose";
 import { paginate } from "../utils/paginate.js";
 import { decodeCursor, encodeCursor } from "../utils/cursorEncodeDecode.js";
+import { paginateFromArray } from "../utils/paginateFromArray.js";
 
 const resolvers = {
   // Users
@@ -161,133 +167,73 @@ const resolvers = {
   },
 
   User: {
-    posts: async (root: any, { first, after }, { models }: GraphQLContext) => {
+    posts: async (root: any, { first, after }, { loaders }: GraphQLContext) => {
       const userId = root.id;
-      let query: any = { author: userId };
-      return paginate<IPost>(query, first, after, models.Post);
+      const allPosts = await loaders.postLoader.load(userId);
+      return paginateFromArray<IPost>(allPosts, first, after);
     },
 
     followers: async (
       root: any,
       { first, after },
-      { models, currentUser }: GraphQLContext
+      { currentUser, loaders }: GraphQLContext
     ) => {
       if (!currentUser) throw new GraphQLError("Not authorized");
 
       const userId = root.id;
-      let query: any = { following: userId };
-
-      if (after) {
-        const decoded = decodeCursor(after);
-        if (Types.ObjectId.isValid(decoded)) {
-          query._id = { $gt: new Types.ObjectId(decoded) };
-        }
-      }
-
-      const follows = await models.Follow.find(query)
-        .sort({ _id: 1 })
-        .limit(first + 1)
-        .populate("follower");
-
-      const hasNextPage = follows.length > first;
-      const edges = follows.slice(0, first).map((follow) => ({
-        node: follow.follower,
-        cursor: encodeCursor(follow._id.toString()),
-      }));
-
-      const endCursor =
-        edges.length > 0 ? edges[edges.length - 1].cursor : null;
-      const totalCount = await models.Follow.countDocuments({
-        following: userId,
-      });
-
-      return {
-        edges,
-        pageInfo: {
-          hasNextPage,
-          endCursor,
-        },
-        totalCount,
-      };
+      const followers = await loaders.followersLoader.load(userId);
+      return paginateFromArray<IFollow>(followers, first, after);
     },
 
     followersCount: async (
       root: any,
       args: any,
-      { models, currentUser }: GraphQLContext
+      { loaders }: GraphQLContext
     ) => {
       const userId = root.id;
-      return await models.Follow.countDocuments({ following: userId });
+      return loaders.followersCountLoader.load(userId);
     },
 
     following: async (
       root: any,
       { first, after },
-      { models, currentUser }: GraphQLContext
+      { currentUser, loaders }: GraphQLContext
     ) => {
       if (!currentUser) throw new GraphQLError("Not authorized");
 
       const userId = root.id;
-      let query: any = { follower: userId };
-
-      if (after) {
-        const decoded = decodeCursor(after);
-        if (Types.ObjectId.isValid(decoded)) {
-          query._id = { $gt: new Types.ObjectId(decoded) };
-        }
-      }
-
-      const follows = await models.Follow.find(query)
-        .sort({ _id: 1 })
-        .limit(first + 1)
-        .populate("following");
-
-      const hasNextPage = follows.length > first;
-      const edges = follows.slice(0, first).map((follow) => ({
-        node: follow.following,
-        cursor: encodeCursor(follow._id.toString()),
-      }));
-
-      const endCursor =
-        edges.length > 0 ? edges[edges.length - 1].cursor : null;
-      const totalCount = await models.Follow.countDocuments({
-        follower: userId,
-      });
-
-      return {
-        edges,
-        pageInfo: {
-          hasNextPage,
-          endCursor,
-        },
-        totalCount,
-      };
+      const following = await loaders.followingLoader.load(userId);
+      return paginateFromArray<IFollow>(following, first, after);
     },
 
     followingCount: async (
       root: any,
       args: any,
-      { models, currentUser }: GraphQLContext
+      { loaders }: GraphQLContext
     ) => {
       const userId = root.id;
-      return await models.Follow.countDocuments({ follower: userId });
+      return loaders.followingCountLoader.load(userId);
     },
 
-    postsCount: async (root: any, args: any, { models }: GraphQLContext) => {
+    postsCount: async (root: any, args: any, { loaders }: GraphQLContext) => {
       const userId = root.id;
-      return await models.Post.countDocuments({ author: userId });
+      return loaders.postsCountLoader.load(userId);
     },
   },
 
   Post: {
-    likesCount: async (root: any, args: any, { models }: GraphQLContext) => {
+    likesCount: async (root: any, args: any, { loaders }: GraphQLContext) => {
       const postId = root.id;
-      return await models.Like.countDocuments({ post: postId });
+      return loaders.likesCountLoader.load(postId);
     },
 
-    commentsCount: async (root: any, args: any, { models }: GraphQLContext) => {
+    commentsCount: async (
+      root: any,
+      args: any,
+      { loaders }: GraphQLContext
+    ) => {
       const postId = root.id;
-      return await models.Comment.countDocuments({ post: postId });
+      return loaders.commentsCountLoader.load(postId);
     },
   },
 
