@@ -41,6 +41,37 @@ const wsServer = new WebSocketServer({ server: httpServer, path: "/graphql" });
 const serverCleanup = useServer(
   {
     schema,
+    context: async (ctx) => {
+      let currentUser = null;
+      const rawAuth = ctx.connectionParams?.authorization;
+      const auth = typeof rawAuth === "string" ? rawAuth : "";
+      if (auth.startsWith("Bearer ")) {
+        try {
+          const decodedToken = jwt.verify(
+            auth.substring(7),
+            process.env.JWT_SECRET
+          ) as jwt.JwtPayload & { id?: string };
+
+          if (decodedToken?.id) {
+            currentUser = await UserModel.findById(decodedToken.id);
+          }
+        } catch (err: any) {
+          console.warn("Invalid token:", err.message);
+        }
+      }
+
+      return {
+        currentUser,
+        models: {
+          User: UserModel,
+          Post: PostModel,
+          Comment: CommentModel,
+          Like: LikeModel,
+          Follow: FollowModel,
+        },
+        loaders: createLoaders(),
+      };
+    },
   },
   wsServer
 );

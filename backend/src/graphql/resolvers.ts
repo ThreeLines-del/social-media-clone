@@ -13,6 +13,9 @@ import { Types } from "mongoose";
 import { paginate } from "../utils/paginate.js";
 import { decodeCursor, encodeCursor } from "../utils/cursorEncodeDecode.js";
 import { paginateFromArray } from "../utils/paginateFromArray.js";
+import { PubSub, withFilter } from "graphql-subscriptions";
+
+const pubSub = new PubSub();
 
 const resolvers = {
   // Users
@@ -342,7 +345,9 @@ const resolvers = {
           content: content,
           image: image,
         });
-        const savedPost = newPost.save();
+        const savedPost = (await newPost.save()).populate("author");
+
+        pubSub.publish("NEW_POST", { newPost: savedPost });
 
         return savedPost;
       } catch (error) {
@@ -404,7 +409,11 @@ const resolvers = {
         content: content,
       });
 
-      const savedComment = (await newComment.save()).populate("author");
+      const savedComment = await newComment.save();
+      await savedComment.populate("author");
+      await savedComment.populate("post");
+
+      pubSub.publish("NEW_COMMENT", { newComment: savedComment });
       return savedComment;
     },
 
@@ -556,6 +565,21 @@ const resolvers = {
         message: "Profile updated successfully",
         user: updatedUser,
       };
+    },
+  },
+
+  Subscription: {
+    newPost: {
+      subscribe: () => pubSub.asyncIterableIterator(["NEW_POST"]),
+    },
+    newComment: {
+      subscribe: withFilter(
+        () => pubSub.asyncIterableIterator(["NEW_COMMENT"]),
+        (payload, variables) => {
+          const postId = payload?.newComment?.post?._id?.toString();
+          return postId === variables.postId;
+        }
+      ),
     },
   },
 };
