@@ -1,10 +1,5 @@
 import { GraphQLError } from "graphql";
-import {
-  GraphQLContext,
-  IFollow,
-  IPost,
-  IUser,
-} from "../types-schemas/types.js";
+import { GraphQLContext, IPost, IUser } from "../types-schemas/types.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import {
@@ -182,7 +177,8 @@ const resolvers = {
 
       const userId = root.id;
       const followers = await loaders.followersLoader.load(userId);
-      return paginateFromArray<IFollow>(followers, first, after);
+
+      return paginateFromArray<IUser>(followers, first, after);
     },
 
     followersCount: async (
@@ -203,7 +199,8 @@ const resolvers = {
 
       const userId = root.id;
       const following = await loaders.followingLoader.load(userId);
-      return paginateFromArray<IFollow>(following, first, after);
+
+      return paginateFromArray<IUser>(following, first, after);
     },
 
     followingCount: async (
@@ -496,7 +493,15 @@ const resolvers = {
       });
 
       if (existingFollow) {
-        await existingFollow.deleteOne();
+        await Promise.all([
+          existingFollow.deleteOne(),
+          models.User.findByIdAndUpdate(currentUser.id, {
+            $inc: { followingCount: -1 },
+          }),
+          models.User.findByIdAndUpdate(user._id, {
+            $inc: { followersCount: -1 },
+          }),
+        ]);
         return {
           success: true,
           following: false,

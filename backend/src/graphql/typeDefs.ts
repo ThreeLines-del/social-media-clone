@@ -23,9 +23,9 @@ const typeDefs = `#graphql
         postsCount: Int!
 
         # Relations
-        posts(first: Int, after: ID): PostConnection!
-        followers(first: Int, after: ID): UserConnection!
-        following(first: Int, after: ID): UserConnection!
+        posts(first: Int!, after: ID): PostConnection!
+        followers(first: Int!, after: ID): UserConnection!
+        following(first: Int!, after: ID): UserConnection!
     }
 
     # =========================
@@ -41,8 +41,8 @@ const typeDefs = `#graphql
         createdAt: String!
 
         # Relations
-        comments(first: Int, after: ID): CommentConnection!
-        likes(first: Int, after: ID): LikeConnection!
+        comments(first: Int!, after: ID): CommentConnection!
+        likes(first: Int!, after: ID): LikeConnection!
     }
 
     # =========================

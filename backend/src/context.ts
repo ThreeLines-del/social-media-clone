@@ -1,10 +1,11 @@
 import DataLoader from "dataloader";
 import PostModel from "./models/post.js";
-import { IFollow, IPost } from "./types-schemas/types.js";
+import { IFollow, IPost, IUser } from "./types-schemas/types.js";
 import FollowModel from "./models/follow.js";
 import mongoose from "mongoose";
 import LikeModel from "./models/like.js";
 import CommentModel from "./models/comment.js";
+import UserModel from "./models/user.js";
 
 function createLoaders() {
   return {
@@ -22,33 +23,69 @@ function createLoaders() {
       return userIds.map((id) => postsByUserId[id] || []);
     }),
 
-    followersLoader: new DataLoader<string, IFollow[]>(async (userIds) => {
-      const followers = await FollowModel.find({ following: { $in: userIds } });
+    // Users who follow a given user
+    followersLoader: new DataLoader<string, IUser[]>(async (userIds) => {
+      const follows = await FollowModel.find({
+        following: {
+          $in: userIds.map((id) => new mongoose.Types.ObjectId(id)),
+        },
+      });
 
-      const followersByUserId: Record<string, IFollow[]> = {};
-
-      for (const follower of followers) {
-        const followerId = follower.toString();
-        if (!followersByUserId[followerId]) followersByUserId[followerId] = [];
-        followersByUserId[followerId].push(follower);
+      // Map followingId => array of followerIds
+      const followerIdsByUserId: Record<string, string[]> = {};
+      for (const follow of follows) {
+        const followingId = follow.following.toString();
+        const followerId = follow.follower.toString();
+        if (!followerIdsByUserId[followingId])
+          followerIdsByUserId[followingId] = [];
+        followerIdsByUserId[followingId].push(followerId);
       }
 
-      return userIds.map((id) => followersByUserId[id] || []);
+      // Fetch all users who are followers
+      const allFollowerIds = follows.map((f) => f.follower.toString());
+      const users = await UserModel.find({ _id: { $in: allFollowerIds } });
+
+      // Build lookup table for follower users
+      const usersById = Object.fromEntries(
+        users.map((u) => [u._id.toString(), u])
+      );
+
+      // Return arrays of follower User documents per user
+      return userIds.map((id) => {
+        const ids = followerIdsByUserId[id] || [];
+        return ids.map((fid) => usersById[fid]).filter(Boolean);
+      });
     }),
 
-    followingLoader: new DataLoader<string, IFollow[]>(async (userIds) => {
-      const following = await FollowModel.find({ follower: { $in: userIds } });
+    // Users that a given user is following
+    followingLoader: new DataLoader<string, IUser[]>(async (userIds) => {
+      const follows = await FollowModel.find({
+        follower: { $in: userIds.map((id) => new mongoose.Types.ObjectId(id)) },
+      });
 
-      const followingByUserId: Record<string, IFollow[]> = {};
-
-      for (const one of following) {
-        const followingId = one.toString();
-        if (!followingByUserId[followingId])
-          followingByUserId[followingId] = [];
-        followingByUserId[followingId].push(one);
+      // Map followerId => array of followingIds
+      const followingIdsByUserId: Record<string, string[]> = {};
+      for (const follow of follows) {
+        const followerId = follow.follower.toString();
+        const followingId = follow.following.toString();
+        if (!followingIdsByUserId[followerId])
+          followingIdsByUserId[followerId] = [];
+        followingIdsByUserId[followerId].push(followingId);
       }
 
-      return userIds.map((id) => followingByUserId[id] || []);
+      // Fetch all users being followed
+      const allFollowingIds = follows.map((f) => f.following.toString());
+      const users = await UserModel.find({ _id: { $in: allFollowingIds } });
+
+      const usersById = Object.fromEntries(
+        users.map((u) => [u._id.toString(), u])
+      );
+
+      // Return arrays of following User documents per user
+      return userIds.map((id) => {
+        const ids = followingIdsByUserId[id] || [];
+        return ids.map((fid) => usersById[fid]).filter(Boolean);
+      });
     }),
 
     followersCountLoader: new DataLoader<string, number>(async (userIds) => {
