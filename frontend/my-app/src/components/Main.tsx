@@ -1,21 +1,27 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { View } from "react-native";
+import FeedPage from "../pages/FeedPage";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import BottomNavBar from "./BottomNavBar";
+import { Navigate, Route, Routes } from "react-router-native";
 
 const Main = () => {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View>
-      <Text style={styles.textColor}>
-        Open up App.tsx to start working on your app!
-      </Text>
-      <StatusBar style="auto" />
+    <View
+      style={{
+        paddingTop: insets.top,
+        flex: 1,
+      }}
+      className="bg-white"
+    >
+      <Routes>
+        <Route path="/" element={<FeedPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <BottomNavBar />
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  textColor: {
-    color: "red",
-  },
-});
 
 export default Main;
