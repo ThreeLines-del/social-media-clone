@@ -18,12 +18,13 @@ export const dummyPosts: Post[] = [
       "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=800&q=60",
     likesCount: 32,
     commentsCount: 5,
+    createdAt: "2025-10-27T12:01:39.940Z",
   },
   {
     id: "68f0dbc6234e2d56e4afcc4e",
     author: {
       id: "68eef4292022f7a6a032ed90",
-      username: "dev_jay",
+      username: "dev_jayyyyyyyyyyyyyyyyyyyy",
       name: "Jay Mensah",
       avatar: "https://randomuser.me/api/portraits/men/31.jpg",
     },
@@ -31,8 +32,9 @@ export const dummyPosts: Post[] = [
       "Frontend devs, what’s your favorite CSS framework? I’m hooked on Tailwind lately 😎",
     image:
       "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=800&q=60",
-    likesCount: 17,
+    likesCount: 1756232,
     commentsCount: 9,
+    createdAt: "2025-10-20T12:01:39.940Z",
   },
   {
     id: "68f0dbce234e2d56e4afcc53",
@@ -46,8 +48,23 @@ export const dummyPosts: Post[] = [
       "Taking a break from coding to appreciate clean UI ✨ — minimal, readable, functional.",
     image:
       "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=60",
-    likesCount: 40,
+    likesCount: 4000,
     commentsCount: 2,
+    createdAt: "2025-10-27T11:49:46.514Z",
+  },
+  {
+    id: "68f0dbe0234e2d56e4afcc62",
+    author: {
+      id: "68eef4292022f7a6a032ed90",
+      username: "uiqueen",
+      name: "Mabel A.",
+      avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+    },
+    content:
+      "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Ratione animi expedita, voluptates non dolor saepe vitae debitis esse obcaecati, earum quas dignissimos corrupti dolorum assumenda error, exercitationem inventore consequatur officia.",
+    likesCount: 102,
+    commentsCount: 20,
+    createdAt: "2025-10-27T20:59:39.940Z",
   },
   {
     id: "68f0dbd3234e2d56e4afcc57",
@@ -60,6 +77,7 @@ export const dummyPosts: Post[] = [
     content: "GraphQL > REST — change my mind 🤓",
     likesCount: 58,
     commentsCount: 12,
+    createdAt: "2025-10-16T11:49:34.411Z",
   },
   {
     id: "68f0dbda234e2d56e4afcc5b",
@@ -75,6 +93,7 @@ export const dummyPosts: Post[] = [
       "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=60",
     likesCount: 87,
     commentsCount: 15,
+    createdAt: "2025-10-16T11:49:08.597Z",
   },
   {
     id: "68f0dbe0234e2d56e4afcc61",
@@ -88,32 +107,35 @@ export const dummyPosts: Post[] = [
       "UI design tip: whitespace is not empty space — it’s breathing room for your content 🌿",
     likesCount: 102,
     commentsCount: 20,
+    createdAt: "2025-10-16T11:49:26.873Z",
   },
 ];
 
 const FeedPage = () => {
   return (
     <View className="flex-1">
-      <View className="h-24">
-        <View className="flex-1 justify-center items-center flex-row relative">
-          <Ionicons
-            name="person-circle"
-            size={30}
-            className="absolute left-0 ml-2"
-          />
-          <Ionicons name="paper-plane-outline" size={40} />
-        </View>
-
-        <View className="flex-row justify-evenly items-center py-1 border-b border-gray-300">
-          <Text className="text-lg font-semibold">For you</Text>
-          <Text className="text-lg font-semibold">Following</Text>
-        </View>
-      </View>
-      <View className="bg-slate-100 flex-1">
+      <View className="flex-1">
         <FlatList
           data={dummyPosts}
           renderItem={({ item }) => <PostItem item={item} />}
           keyExtractor={(item) => item.id}
+          ListHeaderComponent={() => (
+            <View className="h-24">
+              <View className="flex-1 justify-center items-center flex-row relative">
+                <Ionicons
+                  name="person-circle"
+                  size={30}
+                  className="absolute left-0 ml-2"
+                />
+                <Ionicons name="paper-plane-outline" size={40} />
+              </View>
+
+              <View className="flex-row justify-evenly items-center py-1 border-b border-gray-300">
+                <Text className="text-lg font-semibold">For you</Text>
+                <Text className="text-lg font-semibold">Following</Text>
+              </View>
+            </View>
+          )}
         />
       </View>
     </View>

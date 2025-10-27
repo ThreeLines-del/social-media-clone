@@ -21,7 +21,7 @@ function NavIcon({
       <Ionicons
         name={isActive ? active : inactive}
         size={28}
-        color={isActive ? "blue" : "gray"}
+        color={isActive ? "black" : "gray"}
       />
     </Link>
   );
