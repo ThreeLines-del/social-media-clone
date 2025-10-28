@@ -2,6 +2,7 @@ import { FlatList, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import PostItem from "../components/PostItem";
 import { Post } from "../types/types";
+import { Link } from "react-router-native";
 
 export const dummyPosts: Post[] = [
   {
@@ -113,7 +114,12 @@ export const dummyPosts: Post[] = [
 
 const FeedPage = () => {
   return (
-    <View className="flex-1">
+    <View className="flex-1 relative">
+      <Ionicons
+        className="absolute right-0 bottom-0 mb-28 mr-3 z-10"
+        size={62}
+        name="add-circle"
+      />
       <View className="flex-1">
         <FlatList
           data={dummyPosts}
@@ -122,11 +128,14 @@ const FeedPage = () => {
           ListHeaderComponent={() => (
             <View className="h-24">
               <View className="flex-1 justify-center items-center flex-row relative">
-                <Ionicons
-                  name="person-circle"
-                  size={30}
+                <Link
                   className="absolute left-0 ml-2"
-                />
+                  underlayColor={"transparent"}
+                  to={"/login"}
+                >
+                  <Ionicons name="person-circle" size={30} />
+                </Link>
+
                 <Ionicons name="paper-plane-outline" size={40} />
               </View>
 
