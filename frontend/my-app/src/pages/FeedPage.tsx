@@ -1,8 +1,10 @@
-import { FlatList, Text, View } from "react-native";
+import { FlatList, Image, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import PostItem from "../components/PostItem";
 import { Post } from "../types/types";
 import { Link } from "react-router-native";
+import { useQuery } from "@apollo/client/react";
+import { ALL_POSTS, CURRENT_USER } from "../graphql/queries";
 
 export const dummyPosts: Post[] = [
   {
@@ -113,6 +115,44 @@ export const dummyPosts: Post[] = [
 ];
 
 const FeedPage = () => {
+  const data = useQuery<{ me: { id: string; email: string; avatar: string } }>(
+    CURRENT_USER
+  );
+  const allPosts = useQuery<{
+    posts: {
+      edges: {
+        cursor: string;
+        node: {
+          author: {
+            avatar: string;
+            id: string;
+            name: string;
+            username: string;
+          };
+          id: string;
+          content: string;
+          likesCount: number;
+          commentsCount: number;
+          image: string;
+          createdAt: string;
+        };
+        totalCount: number;
+        pageInfo: {
+          endCursor: string | null;
+          hasNextPage: boolean;
+        };
+      }[];
+    };
+  }>(ALL_POSTS, {
+    variables: {
+      first: 8,
+    },
+  });
+
+  const postsNodes = allPosts.data?.posts
+    ? allPosts.data.posts.edges.map((edge) => edge.node)
+    : [];
+  console.log(allPosts.data);
   return (
     <View className="flex-1 relative">
       <Ionicons
@@ -122,7 +162,7 @@ const FeedPage = () => {
       />
       <View className="flex-1">
         <FlatList
-          data={dummyPosts}
+          data={postsNodes}
           renderItem={({ item }) => <PostItem item={item} />}
           keyExtractor={(item) => item.id}
           ListHeaderComponent={() => (
@@ -133,7 +173,14 @@ const FeedPage = () => {
                   underlayColor={"transparent"}
                   to={"/login"}
                 >
-                  <Ionicons name="person-circle" size={30} />
+                  {data.data?.me?.avatar ? (
+                    <Image
+                      className="h-10 w-10 rounded-full"
+                      source={{ uri: data.data.me.avatar }}
+                    />
+                  ) : (
+                    <Ionicons name="person-circle" size={30} />
+                  )}
                 </Link>
 
                 <Ionicons name="paper-plane-outline" size={40} />
