@@ -62,8 +62,38 @@ const resolvers = {
     },
 
     posts: async (_: any, { first, after }, { models }: GraphQLContext) => {
-      const query = {};
-      return paginate<IPost>(query, first, after, models.Post);
+      let query: any = {};
+
+      if (after) {
+        const decoded = decodeCursor(after);
+        if (Types.ObjectId.isValid(decoded)) {
+          query._id = { $gt: new Types.ObjectId(decoded) };
+        }
+      }
+
+      const posts = await models.Post.find(query)
+        .sort({ _id: -1 })
+        .limit(first + 1)
+        .populate("author");
+
+      const hasNextPage = posts.length > first;
+      const edges = posts.slice(0, first).map((post) => ({
+        node: post,
+        cursor: encodeCursor(post._id.toString()),
+      }));
+
+      const endCursor =
+        edges.length > 0 ? edges[edges.length - 1].cursor : null;
+      const totalCount = await models.Post.countDocuments();
+
+      return {
+        edges,
+        pageInfo: {
+          hasNextPage,
+          endCursor,
+        },
+        totalCount,
+      };
     },
 
     feed: async (
@@ -85,7 +115,7 @@ const resolvers = {
       if (after) {
         const decoded = decodeCursor(after);
         if (Types.ObjectId.isValid(decoded)) {
-          query._id = { $lt: new Types.ObjectId(decoded) };
+          query._id = { $gt: new Types.ObjectId(decoded) };
         }
       }
 
