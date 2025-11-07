@@ -38,3 +38,22 @@ export const ALL_POSTS = gql`
     }
   }
 `;
+
+export const POST = gql`
+  query Post($postId: ID!) {
+    post(id: $postId) {
+      content
+      likesCount
+      commentsCount
+      author {
+        avatar
+        id
+        name
+        username
+      }
+      id
+      image
+      createdAt
+    }
+  }
+`;

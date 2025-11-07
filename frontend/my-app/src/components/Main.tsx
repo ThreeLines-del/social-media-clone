@@ -5,6 +5,7 @@ import { Navigate, Route, Routes } from "react-router-native";
 import SearchPage from "../pages/SearchPage";
 import LoginPage from "../pages/LoginPage";
 import MainLayout from "../pages/MainLayout";
+import Post from "./Post";
 
 const Main = () => {
   const insets = useSafeAreaInsets();
@@ -21,6 +22,7 @@ const Main = () => {
         <Route path="/" element={<MainLayout />}>
           <Route index element={<FeedPage />} />
           <Route path="search" element={<SearchPage />} />
+          <Route path="post/:id" element={<Post />} />
         </Route>
         <Route path="/login" element={<LoginPage />} />
 

@@ -152,7 +152,7 @@ const FeedPage = () => {
   const postsNodes = allPosts.data?.posts
     ? allPosts.data.posts.edges.map((edge) => edge.node)
     : [];
-  console.log(allPosts.data);
+
   return (
     <View className="flex-1 relative">
       <Ionicons
