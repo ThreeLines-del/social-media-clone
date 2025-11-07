@@ -57,7 +57,7 @@ const resolvers = {
         throw new GraphQLError("Not unthorized");
       }
 
-      const post = await models.Post.findById(id);
+      const post = await models.Post.findById(id).populate("author");
       return post;
     },
 
