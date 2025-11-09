@@ -57,3 +57,28 @@ export const POST = gql`
     }
   }
 `;
+
+export const COMMENTS = gql`
+  query Comments($postId: ID!, $first: Int!) {
+    comments(postId: $postId, first: $first) {
+      edges {
+        node {
+          content
+          id
+          author {
+            avatar
+            id
+            username
+            name
+          }
+        }
+        cursor
+      }
+      totalCount
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;

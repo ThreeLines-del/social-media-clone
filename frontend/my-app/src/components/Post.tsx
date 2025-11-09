@@ -1,11 +1,12 @@
 import { useQuery } from "@apollo/client/react";
 import { FlatList, Image, Text, View } from "react-native";
-import { useParams } from "react-router-native";
-import { POST } from "../graphql/queries";
+import { Link, useParams } from "react-router-native";
+import { COMMENTS, POST } from "../graphql/queries";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { formatCount } from "../utils/formatCount";
+import Comment from "./Comment";
 dayjs.extend(relativeTime);
 
 const Post = () => {
@@ -34,10 +35,46 @@ const Post = () => {
 
   const post = result.data ? result.data.post : null;
 
+  const allComments = useQuery<{
+    comments: {
+      edges: {
+        node: {
+          content: string;
+          id: string;
+          createdAt: string;
+          author: {
+            id: string;
+            avatar: string;
+            username: string;
+            name: string;
+          };
+        };
+        cursor: string;
+      }[];
+      totalCount: number | null;
+      pageInfo: {
+        hasNextPage: boolean;
+        endCursor: string;
+      };
+    };
+  }>(COMMENTS, {
+    variables: {
+      postId: post?.id,
+      first: 10,
+    },
+  });
+
+  const commentNodes = allComments.data
+    ? allComments.data.comments.edges.map((edge) => edge.node)
+    : [];
+
   return (
     <View className="flex-1">
       <View className="h-10 flex-row justify-between items-center px-3">
-        <Ionicons name="arrow-back" size={20} />
+        <Link to={"../"} underlayColor={"transparent"}>
+          <Ionicons name="arrow-back" size={20} />
+        </Link>
+
         <Text className="text-xl font-semibold">Post</Text>
         <Ionicons name="ellipsis-horizontal" size={20} />
       </View>
@@ -98,8 +135,12 @@ const Post = () => {
           </View>
         </View>
       </View>
-      <View className="flex-1 bg-yellow-300">
-        {/* <FlatList data={}  /> */}
+      <View className="flex-1">
+        <FlatList
+          data={commentNodes}
+          renderItem={({ item }) => <Comment item={item} />}
+          keyExtractor={(item) => item.id}
+        />
       </View>
     </View>
   );

@@ -12,3 +12,5 @@ export interface Post {
   commentsCount: number;
   createdAt: string;
 }
+
+export type CommentType = Omit<Post, "image" | "commentsCount" | "likesCount">;

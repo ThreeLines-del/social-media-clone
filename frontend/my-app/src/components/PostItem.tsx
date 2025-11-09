@@ -13,7 +13,7 @@ interface PostItemProps {
 
 const PostItem = ({ item }: PostItemProps) => {
   const navigate = useNavigate();
-  // console.log(item.commentsCount);
+
   return (
     <Pressable onPress={() => navigate(`post/${item.id}`)}>
       <View className="border-b border-gray-300 flex-row min-h-32">

@@ -145,7 +145,7 @@ const FeedPage = () => {
     };
   }>(ALL_POSTS, {
     variables: {
-      first: 8,
+      first: 10,
     },
   });
 
