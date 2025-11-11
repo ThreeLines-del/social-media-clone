@@ -65,6 +65,7 @@ export const COMMENTS = gql`
         node {
           content
           id
+          createdAt
           author {
             avatar
             id
