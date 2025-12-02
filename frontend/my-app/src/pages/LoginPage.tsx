@@ -5,16 +5,18 @@ import { useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
 import { Link, useNavigate } from "react-router-native";
 import * as yup from "yup";
-import { LOGIN } from "../graphql/mutations";
+import { LOGIN, SIGNUP } from "../graphql/mutations";
 import useAuthStorage from "../hooks/useAuthStorage";
 import { CURRENT_USER } from "../graphql/queries";
 
 const initialValues = {
+  username: "",
   email: "",
   password: "",
 };
 
 const validationSchema = yup.object().shape({
+  username: yup.string().required("username is required"),
   email: yup.string().email().required("email is required"),
   password: yup.string().required("password is required"),
 });
@@ -22,6 +24,7 @@ const validationSchema = yup.object().shape({
 const LoginPage = () => {
   const [isFocused, setIsFocused] = useState(false);
   const [isFocused2, setIsFocused2] = useState(false);
+  const [mode, setMode] = useState("signUp");
   const navigate = useNavigate();
 
   const apolloClient = useApolloClient();
@@ -39,31 +42,60 @@ const LoginPage = () => {
     { email: string; password: string }
   >(LOGIN);
 
+  const [register] = useMutation<
+    { register: { token: string } },
+    { username: string; email: string; password: string }
+  >(SIGNUP);
+
   const onSubmit = async ({
+    username,
     email,
     password,
   }: {
+    username: string;
     email: string;
     password: string;
   }) => {
-    try {
-      const data = await login({
-        variables: {
-          email,
-          password,
-        },
-      });
+    if (mode === "signUp") {
+      try {
+        const data = await register({
+          variables: {
+            username,
+            email,
+            password,
+          },
+        });
 
-      const token = data.data?.login?.token;
-      if (token) {
-        await authStorage.setAccessToken(token);
+        const token = data.data?.register.token;
+        if (token) {
+          await authStorage.setAccessToken(token);
+        }
+
+        apolloClient.resetStore();
+      } catch (error) {
+        console.log(error);
       }
+    } else {
+      try {
+        const data = await login({
+          variables: {
+            email,
+            password,
+          },
+        });
 
-      apolloClient.resetStore();
-      navigate("/");
-    } catch (error) {
-      console.log(error);
+        const token = data.data?.login?.token;
+        if (token) {
+          await authStorage.setAccessToken(token);
+        }
+
+        apolloClient.resetStore();
+      } catch (error) {
+        console.log(error);
+      }
     }
+
+    navigate("/");
   };
 
   const signOut = async () => {
@@ -116,8 +148,24 @@ const LoginPage = () => {
         <View className="flex flex-col w-full gap-5">
           <View className="flex flex-col gap-10 items-center">
             <Ionicons name="paper-plane-outline" size={40} />
-            <Text className="text-3xl font-semibold">Sign in</Text>
+            <Text className="text-3xl font-semibold">
+              {mode === "signUp" ? "Sign up" : "Sign in"}
+            </Text>
           </View>
+
+          <TextInput
+            placeholder="username"
+            className={`border h-14 rounded-full ${isFocused ? "border-blue-500" : "border-gray-400"}  text-lg px-5`}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            value={formik.values.username}
+            onChangeText={formik.handleChange("username")}
+          />
+          {formik.touched.username && formik.errors.username && (
+            <Text className="text-red-500 text-lg">
+              {formik.errors.username}
+            </Text>
+          )}
 
           <TextInput
             placeholder="email"
@@ -151,13 +199,34 @@ const LoginPage = () => {
           >
             <Text className="text-lg font-semibold text-white">Next</Text>
           </Pressable>
-          <Pressable className="border h-14 rounded-full justify-center items-center">
-            <Text className="text-lg font-semibold">Forgot password?</Text>
-          </Pressable>
-          <Text className="text-lg text-gray-400">
-            Don't have an account?{" "}
-            <Text className="text-blue-400 font-semibold">Sign up</Text>
-          </Text>
+
+          {mode !== "signUp" && (
+            <Pressable className="border h-14 rounded-full justify-center items-center">
+              <Text className="text-lg font-semibold">Forgot password?</Text>
+            </Pressable>
+          )}
+
+          {mode === "signUp" ? (
+            <Text className="text-lg text-gray-400">
+              Already have an account?{" "}
+              <Text
+                onPress={() => setMode("")}
+                className="text-blue-400 font-semibold"
+              >
+                Sign in
+              </Text>
+            </Text>
+          ) : (
+            <Text className="text-lg text-gray-400">
+              Don't have an account?{" "}
+              <Text
+                onPress={() => setMode("signUp")}
+                className="text-blue-400 font-semibold"
+              >
+                Sign up
+              </Text>
+            </Text>
+          )}
         </View>
       )}
     </View>
